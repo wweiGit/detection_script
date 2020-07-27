@@ -9,14 +9,14 @@ plt.rcParams['figure.figsize'] = (10.0, 10.0)
 
 
 # 读取数据
-ann_json = '/home/4T/algorithm/zyzn/projects/iflytek_xray_detection/dataset/coco_format/annotations/train_add_one.json'
+ann_json = '/home/wang/data/ifly_xdet/xdet_data/json/all_img_info.json'
 with open(ann_json) as f:
     ann=json.load(f)
 
 category_dic=dict([(i['id'],i['name']) for i in ann['categories']])
 counts_label=dict([(i['name'],0) for i in ann['categories']])
 for i in ann['annotations']:
-    counts_label[category_dic[i['category_id']]]+=1
+    counts_label[category_dic[i['category_id']-1]]+=1
 box_w = []
 box_h = []
 box_wh = []
@@ -39,7 +39,7 @@ box_wh_count=[box_wh.count(i) for i in box_wh_unique]
 print("box_wh_unique:{}".format(box_wh_unique))
 print("box_wh_count:{}".format(box_wh_count))
 #plot
-wh_df = pd.DataFrame(box_wh_count,index=box_wh_unique,columns=['宽高比数量'])
-wh_df.plot(kind='bar',color="#55aacc")
-plt.imsave('./anhor_plt.png',wh_df) 
-plt.show()
+#wh_df = pd.DataFrame(box_wh_count,index=box_wh_unique,columns=['宽高比数量'])
+#wh_df.plot(kind='bar',color="#55aacc")
+#plt.imsave('./anhor_plt.png',wh_df) 
+#plt.show()
