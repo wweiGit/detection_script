@@ -95,7 +95,7 @@ def convert(xml_files, json_file):
             category = get_and_check(obj, "name", 1).text
             if category not in categories:
                 new_id = len(categories)
-                categories[category] = new_id+1
+                categories[category] = new_id
             category_id = categories[category]
             bndbox = get_and_check(obj, "bndbox", 1)
             xmin = float(get_and_check(bndbox, "xmin", 1).text) - 1
@@ -111,7 +111,7 @@ def convert(xml_files, json_file):
                 "iscrowd": 0,
                 "image_id": image_id,
                 "bbox": [xmin, ymin, o_width, o_height],
-                "category_id": category_id+1,
+                "category_id": category_id,
                 "id": bnd_id,
                 "ignore": 0,
                 "segmentation": [],

@@ -13,7 +13,7 @@ def train_cut():
     train_json = json.load(open(args.json))
     cate_id_list = file.getCatIds()
 
-    cate_ann_thr = [int(len(file.getAnnIds(catIds=[i+1]))*args.thr) for i in cate_id_list]
+    cate_ann_thr = [int(len(file.getAnnIds(catIds=[i]))*args.thr) for i in cate_id_list]
     print(cate_ann_thr)
 
     cate_ann_num = {i:0 for i in cate_id_list}
@@ -22,8 +22,8 @@ def train_cut():
 
     for ann in train_json['annotations']:
 
-        if cate_ann_thr[ann['category_id']-1] > cate_ann_num[ann['category_id']-1]:
-            cate_ann_num[ann['category_id']-1]+=1
+        if cate_ann_thr[ann['category_id']] > cate_ann_num[ann['category_id']]:
+            cate_ann_num[ann['category_id']]+=1
             train_img.add(ann['image_id'])
 
     train_json['annotations'] = [ann for ann in train_json['annotations'] if ann['image_id'] in train_img]
