@@ -10,7 +10,7 @@ img_dir = '/home/wang/data/ifly_xdet/JPEGImages'
 json_path = '/home/wang/data/ifly_xdet/xdet_data/json/train.json'
 out_path = '/home/wang/data/ifly_xdet/xdet_data'
 
-sometimes = lambda aug: iaa.Sometimes(0.5, aug)
+#sometimes = lambda aug: iaa.Sometimes(0.5, aug)
 def cate_img_num(cate_id,json_file):
     cate_img_id = set( ann['image_id']  for ann in json_file['annotations'] if ann['category_id']==cate_id )
     return len(cate_img_id)
@@ -67,10 +67,11 @@ def rota_aug(img,anns):
         #iaa.Multiply((1.2, 1.5)),  # change brightness, doesn't affect BBs
         #iaa.GaussianBlur(sigma=(0, 3.0)),
         # iaa.GaussianBlur(0.5),
+        #iaa.Crop(percent=(0, 0.1)),
         iaa.Affine(
             #translate_px={"x": 15, "y": 15},
-            #scale=(0.8, 0.95),
-            rotate=(-30, 30)
+            #scale=(0.8, 1.2),
+            rotate=(-25, 25)
         )  # translate by 40/60px on x/y axis, and scale to 50-70%, affects BBs
     ])
     boxes_img_list = []
@@ -83,13 +84,7 @@ def rota_aug(img,anns):
 
 def img_ann_aug(new_img_id,img,anns,json_file):
     img_h, img_w, img_c = img.shape
-    #print('img_rota_aug')
     image_aug,bbs_aug = rota_aug(img,anns)
-    new_img_name = str(new_img_id) + '.jpg'
-    json_file['images'].append({'file_name': new_img_name, 'height': int(img_h), 'width': int(img_w),
-                    'id': new_img_id})
-    new_img_path = os.path.join(out_path,str(new_img_id)+'.jpg')
-    cv2.imwrite(new_img_path,image_aug)
     #for i in range(len(bbs_aug.bounding_boxes)):
         #after_aug.append(bbs_aug.bounding_boxes[i])
 
@@ -97,10 +92,23 @@ def img_ann_aug(new_img_id,img,anns,json_file):
         ann_tmp = copy.deepcopy(anns)
         #print(ann_tmp[0])
         ann_tmp[0]['image_id'] = new_img_id
-        ann_tmp[0]['bbox'] = [int(bbs_aug.bounding_boxes[i].x1),int(bbs_aug.bounding_boxes[i].y1),
-                       int(bbs_aug.bounding_boxes[i].x2-bbs_aug.bounding_boxes[i].x1),
-                       int(bbs_aug.bounding_boxes[i].y2-bbs_aug.bounding_boxes[i].y1)]
+        #如果坐标不完整则跳过
+        '''
+        if bbs_aug.bounding_boxes[i].x1<0 or bbs_aug.bounding_boxes[i].y1<0 \
+                or bbs_aug.bounding_boxes[i].x2>img_w or bbs_aug.bounding_boxes[i].y2>img_h:
+            print('aug bbox out of img! bbox:{}'.format([bbs_aug.bounding_boxes[i].x1,bbs_aug.bounding_boxes[i].y1,
+                 bbs_aug.bounding_boxes[i].x2,bbs_aug.bounding_boxes[i].y2]))
+            return json_file
+        '''
+        ann_tmp[0]['bbox'] = [int(max(bbs_aug.bounding_boxes[i].x1,0)),int(max(bbs_aug.bounding_boxes[i].y1,0)),
+                       int(min(bbs_aug.bounding_boxes[i].x2-bbs_aug.bounding_boxes[i].x1,img_w)),
+                       int(min(bbs_aug.bounding_boxes[i].y2-bbs_aug.bounding_boxes[i].y1,img_h))]
         json_file['annotations'].append(ann_tmp[0])
+    new_img_name = str(new_img_id) + '.jpg'
+    json_file['images'].append({'file_name': new_img_name, 'height': int(img_h), 'width': int(img_w),
+                                'id': new_img_id})
+    new_img_path = os.path.join(out_path, str(new_img_id) + '.jpg')
+    cv2.imwrite(new_img_path, image_aug)
     return json_file
 
 def cate_img_num_all_cont(json_file):
