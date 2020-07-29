@@ -6,11 +6,13 @@ from numpy import random
 import math
 import imgaug.augmenters as iaa
 from imgaug.augmentables.bbs import BoundingBox, BoundingBoxesOnImage
-img_dir = '/home/wang/data/ifly_xdet/JPEGImages'
-json_path = '/home/wang/data/ifly_xdet/xdet_data/json/train.json'
-out_path = '/home/wang/data/ifly_xdet/xdet_data'
+img_dir = '/home/4T/algorithm/wangwei/dataset/ifly/train_set'
+json_path = '/home/4T/algorithm/wangwei/dataset/ifly/annotations/train_add_one.json'
+out_path = '/home/4T/algorithm/wangwei/dataset/ifly/new_img'
+new_ann_id=100000
 
 #sometimes = lambda aug: iaa.Sometimes(0.5, aug)
+
 def cate_img_num(cate_id,json_file):
     cate_img_id = set( ann['image_id']  for ann in json_file['annotations'] if ann['category_id']==cate_id )
     return len(cate_img_id)
@@ -42,7 +44,6 @@ def img_bbox_resize(new_img_id,img,anns):
         ann['bbox'][2]*=random_s
         ann['bbox'][3]*=random_s
         ann_res.append(ann)
-    print('14')
     return img,img_res,ann_res
 
 def random_flip(img,img_res,ann_res):
@@ -66,13 +67,19 @@ def rota_aug(img,anns):
         #iaa.Fliplr(0.5),  # 镜像
         #iaa.Multiply((1.2, 1.5)),  # change brightness, doesn't affect BBs
         #iaa.GaussianBlur(sigma=(0, 3.0)),
-        # iaa.GaussianBlur(0.5),
+        #iaa.GaussianBlur(0.5),
         #iaa.Crop(percent=(0, 0.1)),
+        iaa.Rot90((1,3),keep_size=False),
         iaa.Affine(
+            scale = {"x":(0.8,1.2),"y":(0.8,1.2)},
+            fit_output=True
+        )
             #translate_px={"x": 15, "y": 15},
             #scale=(0.8, 1.2),
-            rotate=(-25, 25)
-        )  # translate by 40/60px on x/y axis, and scale to 50-70%, affects BBs
+            #scale = {"x":(0.8,1.2),"y":(0.8,1.2)}
+            #rotate=([0,90,180,270],fit_output=True)
+      
+          #translate by 40/60px on x/y axis, and scale to 50-70%, affects BBs
     ])
     boxes_img_list = []
     for bbx in bbxs:
@@ -83,13 +90,17 @@ def rota_aug(img,anns):
 
 
 def img_ann_aug(new_img_id,img,anns,json_file):
-    img_h, img_w, img_c = img.shape
+    #img_h, img_w, img_c = img.shape
     image_aug,bbs_aug = rota_aug(img,anns)
     #for i in range(len(bbs_aug.bounding_boxes)):
         #after_aug.append(bbs_aug.bounding_boxes[i])
-
+    img_aug_h,img_aug_w,img_c = image_aug.shape
     for i,ann in enumerate(anns):
+        global new_ann_id
+        new_ann_id+=1
+        #print(new_ann_id)
         ann_tmp = copy.deepcopy(anns)
+       # print(ann_tmp[0])
         #print(ann_tmp[0])
         ann_tmp[0]['image_id'] = new_img_id
         #如果坐标不完整则跳过
@@ -101,11 +112,13 @@ def img_ann_aug(new_img_id,img,anns,json_file):
             return json_file
         '''
         ann_tmp[0]['bbox'] = [int(max(bbs_aug.bounding_boxes[i].x1,0)),int(max(bbs_aug.bounding_boxes[i].y1,0)),
-                       int(min(bbs_aug.bounding_boxes[i].x2-bbs_aug.bounding_boxes[i].x1,img_w)),
-                       int(min(bbs_aug.bounding_boxes[i].y2-bbs_aug.bounding_boxes[i].y1,img_h))]
+                       int(min(bbs_aug.bounding_boxes[i].x2-bbs_aug.bounding_boxes[i].x1,img_aug_w)),
+                       int(min(bbs_aug.bounding_boxes[i].y2-bbs_aug.bounding_boxes[i].y1,img_aug_h))]
+        ann_tmp[0]['area'] = int((bbs_aug.bounding_boxes[i].x2-bbs_aug.bounding_boxes[i].x1)*(bbs_aug.bounding_boxes[i].y2-bbs_aug.bounding_boxes[i].y1))
+        ann_tmp[0]['id'] = new_ann_id
         json_file['annotations'].append(ann_tmp[0])
     new_img_name = str(new_img_id) + '.jpg'
-    json_file['images'].append({'file_name': new_img_name, 'height': int(img_h), 'width': int(img_w),
+    json_file['images'].append({'file_name': new_img_name, 'height': int(img_aug_h), 'width': int(img_aug_w),
                                 'id': new_img_id})
     new_img_path = os.path.join(out_path, str(new_img_id) + '.jpg')
     cv2.imwrite(new_img_path, image_aug)
@@ -134,12 +147,11 @@ def main():
     print(cate_img_num_all)
     img_copy_times = dict()
     for cate_id in cate_img_num_all.keys():
-        #此类别拥有的图片数量属于600时，计算每张图要copy的次数
+        #此类别拥有的图片数量小于600时，计算每张图要copy的次数
         if cate_img_num_all[cate_id] < 600:
             img_copy_times[cate_id] = math.ceil((600 - cate_img_num_all[cate_id]) / cate_img_num_all[cate_id])
         else:
             img_copy_times[cate_id] = 0
-    print(img_copy_times)
     finish = 0
     while True:
         if finish==1:
@@ -150,7 +162,7 @@ def main():
                continue
             copy_time = img_copy_times[ann_tmp['category_id']]
             img_id_tmp = ann_tmp['image_id']
-            #如果该图片中拥有某类别数量很多，则跳过该图片
+            #如果该图片中拥有某类别数量很多超过1000，则跳过该图片
             ann_deal_before = [ann for ann in json_file_tmp['annotations'] if ann['image_id'] == img_id_tmp]
             img_cate_id_cont = set(ann['category_id'] for ann in ann_deal_before)
             cate_img_nums = [cate_img_num(img_cate_id,json_file) for img_cate_id in img_cate_id_cont]
@@ -175,7 +187,7 @@ def main():
                 finish = 1
                 break
     #print(len(json_file['images']))
-    json.dump(json_file,open('/home/wang/data/ifly_xdet/xdet_data/json/new_train_json.json','w'))
+    json.dump(json_file,open('/home/4T/algorithm/wangwei/dataset/ifly/train_cate_balance.json','w'))
     print('Finish category balance!')
    
 
