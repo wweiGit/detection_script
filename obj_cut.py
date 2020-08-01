@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--images', required=True, help='a list of images to be added on bboxes')
 parser.add_argument('--json', required=True, help='annotation json file in coco format')
 parser.add_argument('--out_json', required=True, help='out random bbox padding info')
-parser.add_argument('--out_img', action='store', dest='out', metavar='REQUIRED',
+parser.add_argument('--out_img', metavar='REQUIRED',
                     required=True, help='output directory to put all bboxed images')
 args = parser.parse_args()
 
@@ -78,7 +78,9 @@ def cut_obj_save(json_file):
         print(cut_img_name)
         ann = {'id': i, 'cate_name': category[0]['name'], 'cate_id': bbox_info['category_id'],
                'random_size': random_rotios, 'img_name': cut_img_name}
-        imwrite_path = os.path.join(args.out, cut_img_name)
+        if not os.path.exists(args.out_img):
+            os.makedirs(args.out_img)
+        imwrite_path = os.path.join(args.out_img, cut_img_name)
         imwrite(imwrite_path, cut_img_pad)
         bbox_random_info.append(ann)
         if i % 100 == 0:
