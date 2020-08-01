@@ -6,9 +6,9 @@ from numpy import random
 import math
 import imgaug.augmenters as iaa
 from imgaug.augmentables.bbs import BoundingBox, BoundingBoxesOnImage
-img_dir = '/home/4T/algorithm/wangwei/dataset/ifly/train_set'
-json_path = '/home/4T/algorithm/wangwei/dataset/ifly/annotations/train_add_one.json'
-out_path = '/home/4T/algorithm/wangwei/dataset/ifly/new_img'
+img_dir = '/home/wang/data/ifly_xdet/JPEGImages'
+json_path = '/home/wang/data/ifly_xdet/xdet_data/json/train.json'
+out_path = '/home/wang/data/ifly_xdet/new_balance_img'
 new_ann_id=100000
 
 #sometimes = lambda aug: iaa.Sometimes(0.5, aug)
@@ -187,7 +187,7 @@ def main():
                 finish = 1
                 break
     #print(len(json_file['images']))
-    json.dump(json_file,open('/home/4T/algorithm/wangwei/dataset/ifly/train_cate_balance.json','w'))
+    json.dump(json_file,open('/home/wang/data/ifly_xdet/xdet_data/json/train_cate_balance.json','w'))
     print('Finish category balance!')
    
 
