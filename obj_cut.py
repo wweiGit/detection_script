@@ -6,6 +6,7 @@ from cv2 import imread, imwrite
 import random
 import cv2
 import os.path as osp
+import json_info
 parser = argparse.ArgumentParser()
 parser.add_argument('--images', required=True, help='a list of images to be added on bboxes')
 parser.add_argument('--json', required=True, help='annotation json file in coco format')
@@ -21,6 +22,10 @@ def random_pad(bbox, random_rotios):
     bbox[0] = bbox[0]-random_rotios * bbox[2]
     bbox[1] = bbox[1]-random_rotios * bbox[3]
     return bbox
+
+def cate_num_cont():
+    data = COCO(args.json)
+    json_info.json_info_print(data)
 
 
 def cut_obj_save(json_file):
@@ -83,6 +88,7 @@ def cut_obj_save(json_file):
 
 
 def main():
+    cate_num_cont()
     cut_obj_save(args.json)
 
 

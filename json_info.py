@@ -9,12 +9,12 @@ def json_info_print(file):
     all_bbox_mum = file.getAnnIds()
     all_cat_num = file.getCatIds()
     cat_name_info = file.loadCats(ids=all_cat_num)
-    print(cat_name_info)
+    #print(cat_name_info)
     cat_name = [cat_info['name'] for cat_info in cat_name_info]
     img_of_cat_cont = [len(file.getImgIds(catIds=[i])) for i in all_cat_num]
     bbox_of_cat_cont = [len(file.getAnnIds(catIds=[i])) for i in all_cat_num]
-    img_of_cat_info = {i: img_of_cat_cont[i] for i in all_cat_num}
-    bbox_of_cat_info = {i:bbox_of_cat_cont[i] for i in all_cat_num}
+    img_of_cat_info = {cat_name[i]: img_of_cat_cont[i] for i in all_cat_num}
+    bbox_of_cat_info = {cat_name[i]:bbox_of_cat_cont[i] for i in all_cat_num}
     print('all img num:{},all bbox num:{},all category num:{}'.format(len(all_img_num), len(all_bbox_mum),
                                                                       len(all_cat_num)))
     print('cat_name:{}'.format(cat_name))
