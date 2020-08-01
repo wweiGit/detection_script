@@ -16,8 +16,8 @@ args = parser.parse_args()
 
 
 def random_pad(bbox, random_rotios):
-    bbox[2] = (1+random_rotios) * bbox[2]
-    bbox[3] = (1+random_rotios) * bbox[3]
+    bbox[2] = (1+2*random_rotios) * bbox[2]
+    bbox[3] = (1+2*random_rotios) * bbox[3]
     bbox[0] = bbox[0]-random_rotios * bbox[2]
     bbox[1] = bbox[1]-random_rotios * bbox[3]
     return bbox
