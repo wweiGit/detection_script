@@ -83,7 +83,9 @@ def all_info_fusion():
 def fusion_info_deal(fusion_info):
     img_num = [len(info) for info in fusion_info]
     print(img_num)
-    assert len(set(img_num)) != 1
+
+    assert len(set(img_num)) == 1
+
     all_img_fusion_info = []
     for id in range(img_num[0]):
         img_bboxs_res = {}
