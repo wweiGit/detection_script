@@ -109,5 +109,5 @@ def fusion_info_deal(fusion_info):
 if __name__ == '__main__':
     fusion_info = all_info_fusion()
     all_img_fusion_info = fusion_info_deal(fusion_info)
-    json.dump(all_img_fusion_info, open(args.out), 'w')
+    json.dump(all_img_fusion_info, open(args.out,'w'))
     print('finish deal img num:{}'.format(len(all_img_fusion_info)))
