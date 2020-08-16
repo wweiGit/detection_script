@@ -25,7 +25,7 @@ def train_id_cate():
     return train_cate
 
 
-def mmdet_inference(config, ckpt):
+def mmdet_inference(config, ckpt,model_name):
     train_cate = train_id_cate()
     model = init_detector(config, ckpt)
     img_name_list = os.listdir(args.images)
@@ -64,6 +64,7 @@ def mmdet_inference(config, ckpt):
         img_bbox_res['labels'] = labels_list
         all_img_bboxs_res.append(img_bbox_res)
         probar.update()
+    json.dump(all_img_bboxs_res, open('./fusion_'+model_name+'.json','w'))
     return all_img_bboxs_res
 
 
@@ -71,11 +72,11 @@ def all_info_fusion():
     config_list = os.listdir(args.config_path)
     fusion_info = []
     for model in config_list:
-        print(model)
+        #print(model)
         model_name = model[:-3]
         model_config = osp.join(args.config_path, model)
         model_ckpt = osp.join(args.ckpt_path, model_name + '.pth')
-        all_img_bboxs_res = mmdet_inference(model_config, model_ckpt)
+        all_img_bboxs_res = mmdet_inference(model_config, model_ckpt,model_name)
         fusion_info.append(all_img_bboxs_res)
     return fusion_info
 
