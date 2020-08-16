@@ -1,11 +1,13 @@
 import argparse
+import cv2
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--json', required=True, help='fusion inference res')
 parser.add_argument('--iou', required=True, help='iou')
 parser.add_argument('--out', required=True, help='wbf res')
+parser.add_argument('--img', required=True, help='img path')
 args = parser.parse_args()
-import json
+import json, os
 from ensemble_boxes import *
 
 
@@ -20,7 +22,17 @@ def wbf(iou_thr=0.55):
         labels_list = res['labels']
         boxes, scores, labels = weighted_boxes_fusion(boxes_list, scores_list, labels_list, weights=weights,
                                                       iou_thr=iou_thr, skip_box_thr=0.0)
+        #print(scores)
         wbf_res['img'] = res['img']
+        img = cv2.imread(os.path.join(args.img, wbf_res['img']))
+        img_h, img_w, _ = img.shape
+        # print(boxes)
+        for box in boxes:
+            box[0] = box[0] * img_w
+            box[2] = box[2] * img_w
+            box[1] = box[1] * img_h
+            box[3] = box[3] * img_h
+        # print(boxes)
         wbf_res['bboxs'] = boxes
         wbf_res['labels'] = labels
         wbf_res['scores'] = scores
