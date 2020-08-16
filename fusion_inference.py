@@ -94,9 +94,10 @@ def fusion_info_deal(fusion_info):
         fusion_labels_list = []
         for info in fusion_info:
             img = info[id]['img']
-            fusion_bboxs_list.append(info['id']['bboxs'])
-            fusion_scores_list.append(info['id']['scores'])
-            fusion_labels_list.append(info['id']['labels'])
+            fusion_bboxs_list.append(info[id]['bboxs'])
+            fusion_scores_list.append(info[id]['scores'])
+            fusion_labels_list.append(info[id]['labels'])
+
         img_bboxs_res['img'] = img
         img_bboxs_res['bboxs'] = fusion_bboxs_list
         img_bboxs_res['scores'] = fusion_scores_list
